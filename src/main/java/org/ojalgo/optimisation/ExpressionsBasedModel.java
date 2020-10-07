@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import org.ojalgo.ProgrammingError;
 import org.ojalgo.array.Array1D;
 import org.ojalgo.array.Primitive64Array;
+import org.ojalgo.function.aggregator.AggregatorFunction;
 import org.ojalgo.function.constant.BigMath;
 import org.ojalgo.netio.BasicLogger;
 import org.ojalgo.netio.BasicLogger.Printer;
@@ -848,7 +849,7 @@ public final class ExpressionsBasedModel extends AbstractModel {
             throw new IllegalStateException("This model is a work copy - its set of variables cannot be modified!");
         }
         myVariables.add(variable);
-        variable.setIndex(new IntIndex(myVariables.size() - 1));
+        variable.setIndex(this, new IntIndex(myVariables.size() - 1));
     }
 
     public void addVariables(final Collection<? extends Variable> variables) {
@@ -1805,6 +1806,20 @@ public final class ExpressionsBasedModel extends AbstractModel {
 
     void setInfeasible() {
         myInfeasible = true;
+    }
+
+    void visitColumn(final Variable variable, final AggregatorFunction<BigDecimal> largest, final AggregatorFunction<BigDecimal> smallest) {
+
+        BigDecimal value;
+        for (Expression expression : myExpressions.values()) {
+            if (expression.isConstraint() && !expression.isRedundant() && expression.isAnyLinearFactorNonZero()) {
+                value = expression.get(variable);
+                if (value != null) {
+                    largest.invoke(value);
+                    smallest.invoke(value);
+                }
+            }
+        }
     }
 
 }

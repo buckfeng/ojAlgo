@@ -51,13 +51,16 @@ public abstract class ModelEntity<ME extends ModelEntity<ME>> implements Optimis
 
         double expL = MissingMath.log10(largest.doubleValue(), PrimitiveMath.ZERO);
 
+        if (expL == 0) {
+            return 0;
+        }
+
         int doubleRange = 2 * range;
 
         if (expL > doubleRange) {
-
             return 0;
-
         }
+
         double expS = Math.max(MissingMath.log10(smallest.doubleValue(), -doubleRange), expL - range);
 
         double negatedAverage = (expL + expS) / -PrimitiveMath.TWO;
